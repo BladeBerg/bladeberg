@@ -39,7 +39,9 @@ The repository publishes a second artifact to npm from the same `v*` tag.
 
 1. Own the `@bladeberg` scope on https://npmjs.com.
 2. Create an npm **Automation** access token and add it as the `NPM_TOKEN` repository secret (Settings → Secrets and variables → Actions).
-3. The `.github/workflows/npm-publish.yml` workflow runs on every `v*` tag: it builds `dist-npm/` and runs `npm publish --access public`.
+3. The `.github/workflows/npm-publish.yml` workflow runs on every `v*` tag: it builds `dist-npm/`, swaps in `README.npm.md`, and runs `npm publish --access public`.
+
+> **v0.2.1+ fix:** The npm package no longer lists `@automattic/isolated-block-editor` as a runtime dependency. The Gutenberg browser bundle is vendored into `dist-npm/` during `npm run build:npm`, so consumers only install `@bladeberg/editor` + `react` + `react-dom`.
 
 > One `vX.Y.Z` tag now drives **both** registries: Packagist auto-updates via the GitHub App, and the workflow publishes to npm. Bump `version` in `package.json` to match the tag before releasing.
 

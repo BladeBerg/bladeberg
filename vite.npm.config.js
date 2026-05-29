@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { resolve } from 'path';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'fs';
 
 /**
  * npm package build for @bladeberg/editor (ESM, headless/SPA consumers).
@@ -23,6 +23,28 @@ const GUTENBERG_CSS = [
     '@wordpress/block-library/build-style/style.css',
     '@wordpress/block-library/build-style/editor.css',
 ];
+
+const RUNTIME_JS = '@automattic/isolated-block-editor/build-browser/isolated-block-editor.js';
+
+function copyRuntimeBundle() {
+    const nm = resolve(__dirname, 'node_modules');
+    const outDir = resolve(__dirname, 'dist-npm');
+
+    return {
+        name: 'bladeberg-npm-copy-runtime',
+        closeBundle() {
+            const srcPath = resolve(nm, RUNTIME_JS);
+            const destPath = resolve(outDir, 'isolated-block-editor.js');
+
+            if (!existsSync(srcPath)) {
+                throw new Error(`[bladeberg] Editor runtime not found: ${srcPath}. Run npm install first.`);
+            }
+
+            copyFileSync(srcPath, destPath);
+            console.log('[bladeberg] Copied isolated-block-editor.js → dist-npm/');
+        },
+    };
+}
 
 function bundleStylesheet() {
     const nm = resolve(__dirname, 'node_modules');
@@ -54,7 +76,7 @@ function bundleStylesheet() {
 }
 
 export default defineConfig({
-    plugins: [react(), bundleStylesheet()],
+    plugins: [react(), copyRuntimeBundle(), bundleStylesheet()],
     css: {
         preprocessorOptions: {
             scss: {

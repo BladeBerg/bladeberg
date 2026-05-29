@@ -34,6 +34,9 @@ jobs:
       - name: Build npm bundle
         run: npm run build:npm
 
+      - name: Use npm README
+        run: cp README.npm.md README.md
+
       - name: Publish
         run: npm publish --access public
         env:

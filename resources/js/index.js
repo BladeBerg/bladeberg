@@ -32,14 +32,36 @@ import { setRuntimeLoader } from './core/runtime.js';
 import '../css/editor.scss';
 
 // Register how the Gutenberg browser runtime is loaded for headless consumers:
-// assign the React globals, then dynamic-import the prebuilt browser bundle
-// (which publishes window.wp.attachEditor as a side effect).
+// assign the React globals, then load the prebuilt browser bundle shipped inside
+// dist-npm/ (copied at build time — not resolved from node_modules at install time).
 setRuntimeLoader(() => {
     window.React = window.React ?? React;
     window.ReactDOM = window.ReactDOM ?? ReactDOM;
-    return import(
-        '@automattic/isolated-block-editor/build-browser/isolated-block-editor.js'
-    );
+
+    if (window.wp?.attachEditor) {
+        return Promise.resolve();
+    }
+
+    const url = new URL('./isolated-block-editor.js', import.meta.url).href;
+    const existing = document.querySelector(`script[data-bladeberg-runtime][src="${url}"]`);
+
+    if (existing) {
+        return new Promise((resolve, reject) => {
+            if (window.wp?.attachEditor) return resolve();
+            existing.addEventListener('load', () => resolve());
+            existing.addEventListener('error', () => reject(new Error('[BladeBerg] Failed to load editor runtime.')));
+        });
+    }
+
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = url;
+        script.defer = true;
+        script.dataset.bladebergRuntime = '1';
+        script.onload = () => resolve();
+        script.onerror = () => reject(new Error('[BladeBerg] Failed to load editor runtime.'));
+        document.head.appendChild(script);
+    });
 });
 
 export { createEditor, registerBlock } from './core/createEditor.js';

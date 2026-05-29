@@ -11,6 +11,18 @@ This project follows [Semantic Versioning](https://semver.org/) and
 
 ---
 
+## [0.2.1] — 2026-05-29
+
+### Fixed
+
+- **npm install no longer pulls in `@wordpress/*`** — `@automattic/isolated-block-editor` moved to devDependencies; the Gutenberg browser runtime is copied into `dist-npm/` at build time and loaded from the package itself. Fixes `ETARGET: No matching version found for @wordpress/base-styles@^9.0.0` for consumers.
+
+### Changed
+
+- npm publish workflow copies `README.npm.md` → `README.md` so the npm registry shows standalone docs.
+
+---
+
 ## [0.2.0] — 2026-05-29
 
 ### Added
