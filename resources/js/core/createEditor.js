@@ -49,6 +49,10 @@ function resolveTextarea(target) {
     if (!el) {
         throw new Error('[BladeBerg] createEditor: target element not found.');
     }
+
+    // Same wrapper class the Blade component uses — scopes layout + z-index overrides.
+    el.classList.add('bladeberg-container');
+
     if (el.tagName === 'TEXTAREA') {
         return el;
     }

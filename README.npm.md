@@ -156,6 +156,13 @@ export default function PostEditor({ content }) {
 
 Don't forget `import '@bladeberg/editor/style.css'` somewhere in your client bundle.
 
+### Styling tips
+
+- Import `@bladeberg/editor/style.css` **before** your app's global CSS so host styles don't override Gutenberg.
+- `createEditor()` adds `.bladeberg-container` to your mount element automatically (same as the Blade component).
+- Avoid `overflow: hidden` on the editor wrapper — it clips block inserter popovers.
+- The red accent (`#e11d1f`) is BladeBerg branding — customize via the SCSS variables in the package source if needed.
+
 ---
 
 ## Rendering stored content

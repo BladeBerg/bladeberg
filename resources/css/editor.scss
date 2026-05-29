@@ -131,6 +131,14 @@ $bb-font-mono: Menlo, Consolas, monaco, monospace !default;
 .bladeberg-container {
     position: relative;
     font-family: var(--wp-font-sans);
+    // Reset host-page typography (e.g. Vite templates set 18px on :root).
+    font-size: 13px;
+    line-height: 1.4;
+    letter-spacing: normal;
+    color: #1e1e1e;
+    overflow: visible;
+    // Don't inherit host-page text-align (e.g. Vite #app { text-align: center }).
+    text-align: initial;
 
     // The wrapper div injected by isolated-block-editor's attachEditor().
     // Do NOT set overflow:hidden here — it would clip any popovers/dropdowns
@@ -237,6 +245,17 @@ $bb-font-mono: Menlo, Consolas, monaco, monospace !default;
 .block-editor-inserter__main-area {
     max-height: $bb-inserter-max-height;
     overflow-y: auto;
+}
+
+// is-next-40px-default-size (height: 40px) loses to more specific block UI
+// selectors in core.css. Re-assert after our overrides load.
+.bladeberg-container .components-button.is-next-40px-default-size:not(.block-editor-block-types-list__item) {
+    height: 40px;
+}
+
+// Inserter tiles are icon + label columns — auto height is intentional in core.css.
+.bladeberg-container .components-button.block-editor-block-types-list__item.is-next-40px-default-size {
+    height: auto;
 }
 
 

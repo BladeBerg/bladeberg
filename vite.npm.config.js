@@ -16,13 +16,12 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'fs';
  *     followed by BladeBerg's compiled overrides, so consumers import one file.
  */
 
-// Raw Gutenberg stylesheets, prepended (in load order) to our compiled CSS.
+// Match config/bladeberg.php defaults: core + iso only.
+// Do NOT add @wordpress/components or @wordpress/block-library styles here —
+// core.css already bundles compatible versions; loading them twice breaks the inserter.
 const GUTENBERG_CSS = [
     '@automattic/isolated-block-editor/build-browser/core.css',
     '@automattic/isolated-block-editor/build-browser/isolated-block-editor.css',
-    '@wordpress/components/build-style/style.css',
-    '@wordpress/block-library/build-style/style.css',
-    '@wordpress/block-library/build-style/editor.css',
 ];
 
 const RUNTIME_JS = '@automattic/isolated-block-editor/build-browser/isolated-block-editor.js';

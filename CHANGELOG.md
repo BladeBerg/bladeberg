@@ -11,6 +11,25 @@ This project follows [Semantic Versioning](https://semver.org/) and
 
 ---
 
+## [0.2.6] — 2026-05-29
+
+### Fixed
+
+- **`.components-button.is-next-40px-default-size`** — toolbar/inspector buttons now reliably get `height: 40px` after BladeBerg overrides load; block inserter tiles keep `height: auto` (icon + label column layout).
+- **Host `text-align` leaking into the editor** — `.bladeberg-container` resets to `text-align: initial` so app-level centering (common in Vite templates) doesn't break the inserter grid.
+
+---
+
+## [0.2.5] — 2026-05-29
+
+### Fixed
+
+- **Broken inserter / popover layout in npm consumers** — `style.css` no longer loads duplicate `@wordpress/components` and `@wordpress/block-library` stylesheets (already bundled inside `core.css`; loading twice caused layout conflicts).
+- **`createEditor()` auto-adds `.bladeberg-container`** — matches the Blade integration wrapper so z-index, toolbar, and typography overrides apply.
+- **Host-page typography isolation** — `.bladeberg-container` resets font-size/line-height so app-level `:root` styles (e.g. Vite templates) don't blow up Gutenberg UI.
+
+---
+
 ## [0.2.4] — 2026-05-29
 
 ### Fixed

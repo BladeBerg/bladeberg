@@ -1,6 +1,6 @@
 {
   "name": "@bladeberg/editor",
-  "version": "0.2.4",
+  "version": "0.2.6",
   "description": "Headless BladeBerg block editor — the Gutenberg editor for SPA/mobile frontends talking to a Laravel backend.",
   "license": "GPL-2.0-or-later",
   "type": "module",
