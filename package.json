@@ -1,6 +1,6 @@
 {
   "name": "@bladeberg/editor",
-  "version": "0.2.1",
+  "version": "0.2.2",
   "description": "Headless BladeBerg block editor — the Gutenberg editor for SPA/mobile frontends talking to a Laravel backend.",
   "license": "GPL-2.0-or-later",
   "type": "module",
@@ -44,8 +44,8 @@
     "prepublishOnly": "vite build --config vite.npm.config.js"
   },
   "peerDependencies": {
-    "react": "^18.2.0",
-    "react-dom": "^18.2.0"
+    "react": "^18.2.0 || ^19.0.0",
+    "react-dom": "^18.2.0 || ^19.0.0"
   },
   "devDependencies": {
     "@automattic/isolated-block-editor": "2.30.0",

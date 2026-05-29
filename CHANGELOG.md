@@ -11,6 +11,14 @@ This project follows [Semantic Versioning](https://semver.org/) and
 
 ---
 
+## [0.2.2] — 2026-05-29
+
+### Changed
+
+- **Peer dependencies** now accept React 18 or 19 (`^18.2.0 || ^19.0.0`) so `npm install` works in React 19 projects without `--legacy-peer-deps`.
+
+---
+
 ## [0.2.1] — 2026-05-29
 
 ### Fixed

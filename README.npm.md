@@ -16,7 +16,7 @@ npm install @bladeberg/editor react react-dom
 
 That's it. The Gutenberg runtime is **bundled inside the package** — you won't hit WordPress dependency hell.
 
-**Requirements:** React 18, a modern browser, and a bundler that supports ESM (`import`).
+**Requirements:** React 18 or 19, a modern browser, and a bundler that supports ESM (`import`).
 
 ---
 
