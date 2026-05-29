@@ -2,6 +2,7 @@
 /node_modules/
 /dist-npm/
 /composer.lock
+/package-lock.json
 /node_modules_old_*/
 /base/
 /public/hot
