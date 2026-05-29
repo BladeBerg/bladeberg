@@ -17,21 +17,58 @@ export function escapeRegExp(value) {
     return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 }
 
+/** Gutenberg HTML class prefixes rewritten alongside block comment delimiters. */
+const HTML_CLASS_TOKENS = ['block', 'element', 'container'];
+
 /**
- * Merge caller-provided options over any existing window.BladebergConfig and
- * write the result back to window.BladebergConfig so downstream media modules
- * can read it.
- *
+ * @param {string} html
+ * @param {string} prefix
+ * @returns {string}
+ */
+export function brandHtmlClasses(html, prefix) {
+    if (!html || prefix === 'wp') {
+        return html;
+    }
+
+    let result = html;
+    for (const token of HTML_CLASS_TOKENS) {
+        result = result.replaceAll(`wp-${token}-`, `${prefix}-${token}-`);
+    }
+
+    return result;
+}
+
+/**
+ * @param {string} html
+ * @param {string} prefix
+ * @returns {string}
+ */
+export function unbrandHtmlClasses(html, prefix) {
+    if (!html || prefix === 'wp') {
+        return html;
+    }
+
+    let result = html;
+    for (const token of HTML_CLASS_TOKENS) {
+        result = result.replaceAll(`${prefix}-${token}-`, `wp-${token}-`);
+    }
+
+    return result;
+}
+
+/**
  * @param {Object} [options]
  * @param {string} [options.blockPrefix]
+ * @param {boolean} [options.rebrandHtmlClasses]
  * @param {Object} [options.media]            { mode, apiUrl, csrfToken }
- * @returns {{ blockPrefix: string, mediaMode: string, mediaApiUrl: string, csrfToken: string }}
+ * @returns {{ blockPrefix: string, rebrandHtmlClasses: boolean, mediaMode: string, mediaApiUrl: string, csrfToken: string }}
  */
-export function resolveConfig({ blockPrefix, media } = {}) {
+export function resolveConfig({ blockPrefix, media, rebrandHtmlClasses } = {}) {
     const existing = window.BladebergConfig ?? {};
 
     const resolved = {
         blockPrefix: blockPrefix ?? existing.blockPrefix ?? 'bb',
+        rebrandHtmlClasses: rebrandHtmlClasses ?? existing.rebrandHtmlClasses ?? true,
         mediaMode: media?.mode ?? existing.mediaMode ?? 'disabled',
         mediaApiUrl: media?.apiUrl ?? existing.mediaApiUrl ?? '',
         csrfToken:
@@ -47,29 +84,61 @@ export function resolveConfig({ blockPrefix, media } = {}) {
 }
 
 /**
- * Read a textarea's block markup with `<!-- wp:… -->` delimiters rewritten to
- * the configured prefix (default `bb`). This is the only place stored content
- * is branded.
- *
- * @param {HTMLTextAreaElement} textarea
- * @param {string} prefix
- * @returns {string}
- */
-export function brandContent(textarea, prefix) {
-    const raw = textarea?.value ?? '';
-    return raw.replace(/<!--\s*(\/?)wp:/g, `<!-- $1${prefix}:`);
-}
-
-/**
- * Rewrite stored configured-prefix markup back to `wp:` so the editor's internal
- * parser can load previously-saved content.
+ * Brand block comment delimiters and (optionally) wp-* HTML classes for storage.
  *
  * @param {string} value
  * @param {string} prefix
+ * @param {{ rebrandClasses?: boolean }} [options]
  * @returns {string}
  */
-export function unbrandContent(value, prefix) {
+export function brandHtml(value, prefix, { rebrandClasses = true } = {}) {
+    let out = value.replace(/<!--\s*(\/?)wp:/g, `<!-- $1${prefix}:`);
+
+    if (rebrandClasses && prefix !== 'wp') {
+        out = brandHtmlClasses(out, prefix);
+    }
+
+    return out;
+}
+
+/**
+ * Read a textarea's block markup with wp: delimiters (and classes) rewritten
+ * to the configured prefix for storage.
+ *
+ * @param {HTMLTextAreaElement} textarea
+ * @param {string} prefix
+ * @param {{ rebrandClasses?: boolean }} [options]
+ * @returns {string}
+ */
+export function brandContent(textarea, prefix, options = {}) {
+    const rebrandClasses = options.rebrandClasses
+        ?? window.BladebergConfig?.rebrandHtmlClasses
+        ?? true;
+
+    return brandHtml(textarea?.value ?? '', prefix, { rebrandClasses });
+}
+
+/**
+ * Rewrite stored configured-prefix markup back to wp: / wp-* so Gutenberg can parse it.
+ *
+ * @param {string} value
+ * @param {string} prefix
+ * @param {{ rebrandClasses?: boolean }} [options]
+ * @returns {string}
+ */
+export function unbrandContent(value, prefix, options = {}) {
     if (!value) return value;
+
+    const rebrandClasses = options.rebrandClasses
+        ?? window.BladebergConfig?.rebrandHtmlClasses
+        ?? true;
+
     const re = new RegExp(`<!--\\s*(\\/?)\\s*${escapeRegExp(prefix)}:`, 'g');
-    return value.replace(re, '<!-- $1wp:');
+    let out = value.replace(re, '<!-- $1wp:');
+
+    if (rebrandClasses && prefix !== 'wp') {
+        out = unbrandHtmlClasses(out, prefix);
+    }
+
+    return out;
 }

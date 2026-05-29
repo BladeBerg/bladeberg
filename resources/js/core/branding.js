@@ -108,8 +108,13 @@ export function installCodeEditorOverlay(prefix) {
     const OVERLAY_ATTR = 'data-bb-code-overlay';
 
     function brandRawMarkup(raw) {
+        const prefix = activePrefix;
         return raw
+            .replace(/<!--\s*(\/?)wp:/g, `<!-- $1${prefix}:`)
             .replace(/wp:([\w-]+)/g, `${activePrefix}:$1`)
+            .replace(/wp-block-/g, `${activePrefix}-block-`)
+            .replace(/wp-element-/g, `${activePrefix}-element-`)
+            .replace(/wp-container-/g, `${activePrefix}-container-`)
             .replace(/WordPress/g, 'BladeBerg')
             .replace(/core\/([\w-]+)/g, `${activePrefix}/$1`);
     }

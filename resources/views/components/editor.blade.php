@@ -75,6 +75,7 @@
     <script>
     window.BladebergConfig = {
         blockPrefix:  "{{ $bbBlockPrefix }}",
+        rebrandHtmlClasses: @json(config('bladeberg.rebrand_html_classes', true)),
         mediaMode:    "{{ $bbMediaMode }}",
         mediaApiUrl:  "{{ $bbMediaApiUrl }}",
         csrfToken:    "{{ csrf_token() }}"

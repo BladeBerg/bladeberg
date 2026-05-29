@@ -27,6 +27,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Rebrand HTML Classes
+    |--------------------------------------------------------------------------
+    |
+    | When true, stored block HTML uses your prefix in class names as well as
+    | block comments — e.g. bb-block-paragraph instead of wp-block-paragraph.
+    | Gutenberg still uses wp-* internally while editing; getContent() / form
+    | submit rewrites them for storage. The render pipeline converts them back
+    | to wp-* so blocks-style.css continues to work on the frontend.
+    |
+    */
+    'rebrand_html_classes' => env('BLADEBERG_REBRAND_HTML_CLASSES', true),
+
+    /*
+    |--------------------------------------------------------------------------
     | Allowed Blocks
     |--------------------------------------------------------------------------
     |

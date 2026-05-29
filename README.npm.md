@@ -338,6 +338,7 @@ editor.destroy();
 | `target` | `string \| Element` | *(required)* | CSS selector or element. A `<textarea>` is mounted directly; any other element gets a hidden textarea appended. |
 | `value` | `string` | `''` | Initial block HTML (your configured prefix). |
 | `blockPrefix` | `string` | `'bb'` | Prefix written into block comments on save. |
+| `rebrandHtmlClasses` | `boolean` | `true` | Rewrite `wp-block-*` → `{prefix}-block-*` (and element/container) in stored HTML. |
 | `settings` | `object` | `{}` | Forwarded to Gutenberg's `attachEditor()`. |
 | `media` | `object` | — | `{ mode, apiUrl, csrfToken }` — see [Media](#media). |
 | `branding` | `boolean` | `true` | Rebrand "WordPress" strings in the UI. |
@@ -367,13 +368,39 @@ registerBlock('my-plugin/callout', { /* block settings */ });
 
 ## Content format
 
-Gutenberg saves blocks as HTML comments:
+Gutenberg saves blocks as HTML comments **and** HTML classes:
 
 ```html
-<!-- bb:paragraph --><p>Hello world</p><!-- /bb:paragraph -->
+<!-- bb:paragraph --><p class="bb-block-paragraph">Hello world</p><!-- /bb:paragraph -->
 ```
 
-The `bb:` prefix (configurable via `blockPrefix`) keeps your database free of WordPress branding. On load, BladeBerg converts it back to `wp:` internally so Gutenberg can parse it, then converts it back on save.
+| What | Stored as | While editing (live DOM) |
+|------|-----------|--------------------------|
+| Block comments | `bb:paragraph` | Gutenberg uses `wp:` internally |
+| HTML classes | `bb-block-*` (default) | Gutenberg uses `wp-block-*` in the canvas |
+| UI labels | BladeBerg / your prefix | Patched in the chrome only |
+
+### Why you still see `wp-*` sometimes
+
+- **Inside the editor canvas while typing** — Gutenberg's save output uses `wp-block-*` until you call `getContent()`. That can't be changed without forking the editor bundle.
+- **Editor chrome CSS** — classes like `components-button`, `iso-editor` are Gutenberg internals; not rebranded.
+- **Frontend render** — PHP converts `bb-block-*` back to `wp-block-*` on output so WordPress block CSS applies to visitors.
+
+### Disable class rebranding
+
+If you prefer to keep `wp-block-*` in your database:
+
+```js
+// npm / headless
+createEditor({ target: '#editor', rebrandHtmlClasses: false });
+```
+
+```php
+// Laravel config/bladeberg.php
+'rebrand_html_classes' => false,
+```
+
+Comment delimiters (`bb:` vs `wp:`) are always rebranded on save regardless of this setting.
 
 ---
 

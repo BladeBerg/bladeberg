@@ -26,7 +26,7 @@
                 'block'        => $block,
             ])
         @else
-            {!! $block->innerHTML !!}
+            {!! \Bladeberg\Support\HtmlBranding::normalizeForRender($block->innerHTML) !!}
         @endif
     @endforeach
 </div>

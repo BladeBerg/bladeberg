@@ -11,6 +11,14 @@ This project follows [Semantic Versioning](https://semver.org/) and
 
 ---
 
+## [0.2.7] — 2026-05-29
+
+### Added
+
+- **HTML class rebranding** — stored content can use `bb-block-*`, `bb-element-*`, and `bb-container-*` instead of `wp-block-*` etc. Enabled by default (`rebrand_html_classes` / `rebrandHtmlClasses`). Gutenberg still uses `wp-*` while editing; `getContent()` and form submit rewrite classes for storage; PHP render converts them back so `blocks-style.css` keeps working.
+
+---
+
 ## [0.2.6] — 2026-05-29
 
 ### Fixed

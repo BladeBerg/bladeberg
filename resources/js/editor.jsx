@@ -18,7 +18,7 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import '../css/editor.scss';
 import { createEditor, registerBlock } from './core/createEditor.js';
-import { brandContent } from './core/config.js';
+import { brandContent, brandHtml } from './core/config.js';
 
 // Must run synchronously before the deferred isolated-block-editor.js script
 // executes, since that bundle reads these globals.
@@ -85,9 +85,10 @@ function wireFormInterceptor(textarea) {
 
     form.addEventListener('submit', () => {
         const prefix = window.BladebergConfig?.blockPrefix ?? 'bb';
+        const rebrandClasses = window.BladebergConfig?.rebrandHtmlClasses ?? true;
         form.querySelectorAll('textarea[data-bladeberg-editor]').forEach((ta) => {
             if (ta.value) {
-                ta.value = ta.value.replace(/<!--\s*(\/?)wp:/g, `<!-- $1${prefix}:`);
+                ta.value = brandHtml(ta.value, prefix, { rebrandClasses });
             }
         });
     }, { capture: true });

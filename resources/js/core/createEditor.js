@@ -117,6 +117,7 @@ export async function createEditor(options = {}) {
         settings = {},
         blockPrefix,
         media,
+        rebrandHtmlClasses,
         branding = true,
         contextMenu = true,
         onChange,
@@ -125,15 +126,16 @@ export async function createEditor(options = {}) {
     await ensureRuntime();
     flushBlockQueue();
 
-    const cfg = resolveConfig({ blockPrefix, media });
+    const cfg = resolveConfig({ blockPrefix, media, rebrandHtmlClasses });
     const prefix = cfg.blockPrefix;
+    const brandOptions = { rebrandClasses: cfg.rebrandHtmlClasses };
 
     const textarea = resolveTextarea(target);
     textarea.dataset.bladebergMounted = '1';
 
     if (value != null) textarea.value = value;
     if (textarea.value) {
-        textarea.value = unbrandContent(textarea.value, prefix);
+        textarea.value = unbrandContent(textarea.value, prefix, brandOptions);
     }
 
     const editorSettings = wireMedia(cfg.mediaMode, { ...settings });
@@ -157,7 +159,7 @@ export async function createEditor(options = {}) {
         pollId = window.setInterval(() => {
             if (textarea.value === lastValue) return;
             lastValue = textarea.value;
-            const branded = brandContent(textarea, prefix);
+            const branded = brandContent(textarea, prefix, brandOptions);
             subscribers.forEach((cb) => {
                 try { cb(branded); } catch (err) { console.error('[BladeBerg] onChange handler error:', err); }
             });
@@ -168,7 +170,7 @@ export async function createEditor(options = {}) {
 
     return {
         textarea,
-        getContent: () => brandContent(textarea, prefix),
+        getContent: () => brandContent(textarea, prefix, brandOptions),
         onChange(cb) {
             subscribers.add(cb);
             startPolling();
