@@ -9,6 +9,10 @@ This project follows [Semantic Versioning](https://semver.org/) and
 
 ## [Unreleased]
 
+---
+
+## [0.2.0] — 2026-05-29
+
 ### Added
 
 - **Headless / decoupled mode** for API-based projects (SPA, mobile, separate frontends) without splitting the repo

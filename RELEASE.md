@@ -1,6 +1,7 @@
-# Release Checklist — v0.1.0
+# Release Checklist
 
-Follow these steps when you are ready to publish BladeBerg to Packagist.
+Follow these steps when you are ready to publish a BladeBerg release. Bump
+`version` in `package.json` and roll `CHANGELOG.md` to match the tag first.
 
 ## 1. Create a GitHub repository
 
