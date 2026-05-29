@@ -9,6 +9,21 @@ This project follows [Semantic Versioning](https://semver.org/) and
 
 ## [Unreleased]
 
+### Changed
+
+- Simplified `bladeberg:install` — removed all interactive media prompts and auto-`migrate`; the media manager is now configured purely via `config/bladeberg.php` (`media.mode`) / env, re-using the app's `FILESYSTEM_DISK`
+- Added a unified `bladeberg` publish tag: `php artisan vendor:publish --tag=bladeberg` publishes assets + config (granular tags remain)
+- `media.driver` resolution fallback corrected from `spatie` to `filesystem` (matches the config default)
+
+### Removed
+
+- `NormalizeBbContent` middleware, the `bladeberg.normalize` alias, and the `content_normalization` config block — the `wp:` → configured-prefix rewrite happens entirely client-side at save time, so the server-side safety net was redundant
+- `Bladeberg::normalize()` / `Bladeberg::denormalize()` facade methods and the `BbContent` helper (plus `BbContentTest`) — prefix conversion is handled in JS; import/paste re-prefixing is done client-side
+
+---
+
+## [0.1.0] — 2026-05-29
+
 ### Added
 
 - Configurable `block_prefix` (default `bb`) — content is saved as `<!-- bb:… -->` and normalized back to `wp:` for parsing
@@ -21,8 +36,8 @@ This project follows [Semantic Versioning](https://semver.org/) and
 - `bladeberg:install` Artisan command — publishes assets, config, and prints next-steps guidance
 - `BladebergRegistry::hasBlock()` alias for `isDynamicBlock()`
 - `BladebergRegistry::getRegisteredBlocks()` introspection method
-- `window.Bladeberg.registerBlock(name, settings)` global helper for registering custom blocks from host-app JS
-- `window.wp.element`, `window.wp.blockEditor`, `window.wp.components` exposed from the bundled `@wordpress/*` packages
+- `window.Bladeberg.getContent(name)` helper to read the current `bb:`-prefixed editor content
+- `window.Bladeberg.registerBlock(name, settings)` — reserved forward-compatible API for custom editor blocks (see README "Building custom blocks"; not functional with the current standalone bundle)
 - Hardened `BlockParser`: self-closing blocks (`<!-- wp:name /-->`), nested inner blocks, depth-aware closing-tag search, typed `Block` value object with `isNamed()`, `hasInnerBlocks()`, `getAttribute()`, `isSelfClosing`
 - `Block::getAttribute(string $key, mixed $default = null)` helper
 - PHPDoc coverage across all public APIs
@@ -54,5 +69,6 @@ This project follows [Semantic Versioning](https://semver.org/) and
 - Laravel auto-discovery via service provider
 - Demo Laravel app with posts create/show
 
-[Unreleased]: https://github.com/BladeBerg/bladeberg/compare/v0.0.1...HEAD
+[Unreleased]: https://github.com/BladeBerg/bladeberg/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/BladeBerg/bladeberg/compare/v0.0.1...v0.1.0
 [0.0.1]: https://github.com/BladeBerg/bladeberg/releases/tag/v0.0.1

@@ -18,9 +18,9 @@ return [
     | Developers may change this to any lowercase identifier:
     |   'block_prefix' => 'myapp'   // → <!-- myapp:paragraph -->
     |
-    | The PHP parser and BbContent helper automatically normalize the
-    | configured prefix back to `wp:` for internal processing, so changing
-    | this value does not break existing stored content.
+    | The PHP block parser automatically normalizes the configured prefix back
+    | to `wp:` for internal rendering, so changing this value does not break
+    | existing stored content.
     |
     */
     'block_prefix' => env('BLADEBERG_BLOCK_PREFIX', 'bb'),
@@ -203,38 +203,6 @@ return [
             'medium'    => ['width' => 768,  'height' => null],
             'large'     => ['width' => 1200, 'height' => null],
         ],
-    ],
-
-    /*
-    |--------------------------------------------------------------------------
-    | Content Normalization
-    |--------------------------------------------------------------------------
-    |
-    | BladeBerg's JS form-submit interceptor rewrites `<!-- wp:… -->` block
-    | comment delimiters to `<!-- bb:… -->` before the browser sends the form.
-    | This middleware provides an identical server-side safety net for requests
-    | that bypass the interceptor (AJAX submissions, server-side imports, etc.).
-    |
-    | enabled
-    |   Set to true to activate the NormalizeBbContent middleware globally via
-    |   its alias. The middleware is always available as 'bladeberg.normalize'
-    |   for per-route use regardless of this setting.
-    |
-    | fields
-    |   Request field names that carry block-editor content. The middleware
-    |   normalizes wp: → bb: in each of these fields if they are present and
-    |   contain a string value.
-    |
-    | Per-route usage (no global activation required):
-    |   Route::post('/posts', [PostController::class, 'store'])
-    |       ->middleware('bladeberg.normalize');
-    |
-    | Or call BbContent::normalize($content) manually in a controller / model.
-    |
-    */
-    'content_normalization' => [
-        'enabled' => false,
-        'fields'  => ['content'],
     ],
 
 ];

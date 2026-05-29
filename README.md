@@ -134,7 +134,14 @@ php artisan bladeberg:install
 1. Publish the compiled editor assets to `public/vendor/bladeberg/`.
 2. Publish the config file to `config/bladeberg.php`.
 3. Print next-step guidance.
-4. Optionally walk you through enabling the [media manager](#media-manager).
+
+Prefer plain `vendor:publish`? The unified tag publishes the same set (assets + config):
+
+```bash
+php artisan vendor:publish --tag=bladeberg
+```
+
+Granular tags are also available: `bladeberg-assets`, `bladeberg-config`, `bladeberg-views`, `bladeberg-migrations`.
 
 > **Heads up:** re-run `php artisan bladeberg:install` (or `php artisan vendor:publish --tag=bladeberg-assets --force`) after every package update so the published assets stay in sync with the installed version.
 
@@ -258,11 +265,10 @@ BladeBerg rewrites this to **your** prefix before the content ever leaves the br
 <!-- bb:paragraph --><p>Hello</p><!-- /bb:paragraph -->
 ```
 
-This happens in three coordinated places:
+This happens in two coordinated places:
 
-1. **Client (on submit)** — a form-submit interceptor in `editor.jsx` rewrites `wp:` → `bb:` in the textarea value just before the request is sent.
-2. **Server (parsing)** — `BlockParser` normalizes the configured prefix back to `wp:` at its entry point, so rendering is unaffected by the prefix you choose.
-3. **Server (optional middleware)** — `bladeberg.normalize` / `BbContent::normalize()` provide the same rewrite for non-form requests.
+1. **Client (on save)** — a form-submit interceptor in `editor.jsx` (and `window.Bladeberg.getContent()` for AJAX) rewrites `wp:` → your prefix in the textarea value just before the request is sent. This is the only place stored content is branded; nothing on the server rewrites it.
+2. **Server (parsing only)** — `BlockParser` normalizes your prefix back to `wp:` at its entry point purely so it can render the blocks; it never changes what's stored.
 
 Change the prefix per project:
 
@@ -292,44 +298,20 @@ No configuration required — it's wired automatically when the editor mounts.
 
 ## Storing & rendering content
 
-Store the posted `content` field as-is; it already carries your `bb:` prefix. To render it, use the component:
+Store the posted `content` field as-is — it already carries your `bb:` prefix. The rewrite from Gutenberg's `wp:` to your configured prefix happens **entirely on the client**, at save time: the editor's form-submit interceptor (and `window.Bladeberg.getContent()` for AJAX) rewrites the markup before it leaves the browser. There is no server-side middleware to register and nothing rewrites your stored content after the fact.
+
+```php
+// Your controller is plain Laravel — content arrives already bb:-prefixed.
+$post->content = $request->input('content');
+```
+
+To render it, use the component:
 
 ```blade
 <x-bladeberg-render :content="$post->content" />
 ```
 
-### Manual normalization
-
-If you accept content from a source that bypasses the editor's form interceptor (an API endpoint, a queued import, a data migration), normalize it explicitly:
-
-```php
-use Bladeberg\Facades\Bladeberg;
-
-$post->content = Bladeberg::normalize($request->input('content')); // wp: → bb:
-```
-
-Or attach the middleware to the route:
-
-```php
-Route::post('/posts', [PostController::class, 'store'])
-    ->middleware('bladeberg.normalize');
-```
-
-Configure which fields it touches:
-
-```php
-// config/bladeberg.php
-'content_normalization' => [
-    'enabled' => true,            // also register it globally via its alias
-    'fields'  => ['content', 'body'],
-],
-```
-
-Need the original WordPress format back (for a WP REST bridge, etc.)? Reverse it:
-
-```php
-$wpCompatible = Bladeberg::denormalize($post->content); // bb: → wp:
-```
+> **Importing or pasting existing content?** Handle any prefix conversion on the client. When you load saved content back into the editor via `:value`, BladeBerg converts your prefix to `wp:` on mount so Gutenberg can parse it, then converts it back to your prefix on save. Pasted block markup is serialized by the editor and rewritten on submit the same way.
 
 ---
 
@@ -514,11 +496,9 @@ Bladeberg::isDynamicBlock('bladeberg/hero');       // true
 Bladeberg::hasBlock('bladeberg/hero');             // alias of isDynamicBlock()
 Bladeberg::getDynamicBlockView('bladeberg/hero');  // 'blocks.hero'
 Bladeberg::getRegisteredBlocks();                  // ['bladeberg/hero' => 'blocks.hero', …]
-
-// Content prefix conversion
-Bladeberg::normalize($html);    // wp: → bb:
-Bladeberg::denormalize($html);  // bb: → wp:
 ```
+
+> Block-comment prefix rewriting (`wp:` ↔ your prefix) is handled on the client at save time — there is no server-side conversion helper or middleware. Stored content always uses your configured prefix.
 
 ---
 

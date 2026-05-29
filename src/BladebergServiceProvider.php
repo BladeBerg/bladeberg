@@ -5,7 +5,6 @@ declare(strict_types=1);
 namespace Bladeberg;
 
 use Bladeberg\Console\InstallCommand;
-use Bladeberg\Http\Middleware\NormalizeBbContent;
 use Bladeberg\Media\FilesystemMediaDriver;
 use Bladeberg\Media\MediaDriverInterface;
 use Bladeberg\Media\SpatieMediaDriver;
@@ -46,6 +45,13 @@ class BladebergServiceProvider extends ServiceProvider
         }
 
         if ($this->app->runningInConsole()) {
+            // Unified tag — publishes the common set (assets + config):
+            //   php artisan vendor:publish --tag=bladeberg
+            $this->publishes([
+                __DIR__.'/../dist'                 => public_path('vendor/bladeberg'),
+                __DIR__.'/../config/bladeberg.php' => config_path('bladeberg.php'),
+            ], 'bladeberg');
+
             $this->publishes([
                 __DIR__.'/../dist' => public_path('vendor/bladeberg'),
             ], 'bladeberg-assets');
@@ -67,12 +73,6 @@ class BladebergServiceProvider extends ServiceProvider
 
         Blade::component('bladeberg::components.editor', 'bladeberg-editor');
         Blade::component('bladeberg::components.render', 'bladeberg-render');
-
-        // Register the middleware alias so users can apply it per-route:
-        //   Route::post('/posts', ...)->middleware('bladeberg.normalize');
-        /** @var \Illuminate\Routing\Router $router */
-        $router = $this->app->make('router');
-        $router->aliasMiddleware('bladeberg.normalize', NormalizeBbContent::class);
     }
 
     /**
@@ -85,7 +85,7 @@ class BladebergServiceProvider extends ServiceProvider
     private function registerMediaDriver(): void
     {
         $this->app->bind(MediaDriverInterface::class, function () {
-            $driver  = config('bladeberg.media.driver', 'spatie');
+            $driver  = config('bladeberg.media.driver', 'filesystem');
             $spatiePkg = 'Spatie\\MediaLibrary\\HasMedia';
 
             if ($driver === 'spatie' && interface_exists($spatiePkg)) {

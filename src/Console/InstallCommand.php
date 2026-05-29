@@ -35,46 +35,11 @@ class InstallCommand extends Command
         $this->line('  2. Add <comment><x-bladeberg-render :content="$post->content" /></comment> to your show view.');
         $this->line('  3. Register dynamic blocks in AppServiceProvider using <comment>Bladeberg::registerDynamicBlock()</comment>.');
         $this->line('  4. Re-run <comment>php artisan bladeberg:install</comment> after package updates to refresh assets.');
-
-        if ($this->confirm('Would you like to enable the BladeBerg Media Manager?', false)) {
-            $this->setupMediaManager();
-        }
+        $this->newLine();
+        $this->line('Media manager (optional): set <comment>media.mode</comment> in <comment>config/bladeberg.php</comment>');
+        $this->line('  (or <comment>BLADEBERG_MEDIA_MODE</comment>). It re-uses your app\'s <comment>FILESYSTEM_DISK</comment> by default.');
+        $this->line('  Only run migrations if you opt into the <comment>spatie</comment> driver.');
 
         return self::SUCCESS;
-    }
-
-    private function setupMediaManager(): void
-    {
-        $this->newLine();
-        $this->info('Setting up Media Manager…');
-
-        $this->call('vendor:publish', [
-            '--tag' => 'bladeberg-migrations',
-        ]);
-        $this->line('  <fg=green;options=bold>✓</> BladeBerg migrations published.');
-
-        $useSpatie = $this->confirm('Use spatie/laravel-medialibrary for thumbnails and conversions? (recommended)', true);
-
-        if ($useSpatie) {
-            if (!class_exists(\Spatie\MediaLibrary\HasMedia::class)) {
-                $this->warn('  spatie/laravel-medialibrary is not installed.');
-                $this->line('  Run: <comment>composer require spatie/laravel-medialibrary</comment>');
-                $this->line('  Then re-run: <comment>php artisan bladeberg:install</comment>');
-                $this->line('  Or set <comment>media.driver = "filesystem"</comment> in config/bladeberg.php to skip Spatie.');
-            } else {
-                $this->call('vendor:publish', [
-                    '--provider' => 'Spatie\MediaLibrary\MediaLibraryServiceProvider',
-                    '--tag'      => 'medialibrary-migrations',
-                ]);
-                $this->line('  <fg=green;options=bold>✓</> Spatie migrations published.');
-            }
-        }
-
-        $this->call('migrate');
-        $this->line('  <fg=green;options=bold>✓</> Migrations run.');
-
-        $this->newLine();
-        $this->line('  Enable the media manager in <comment>config/bladeberg.php</comment>:');
-        $this->line("  <comment>'media' => ['enabled' => true, 'driver' => '" . ($useSpatie ? 'spatie' : 'filesystem') . "']</comment>");
     }
 }
