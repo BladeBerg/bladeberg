@@ -22,21 +22,22 @@
  *     body: JSON.stringify({ content: editor.getContent() }),
  *   });
  *
- * react and react-dom are peer dependencies (the host app's copies are reused as
- * window.React / window.ReactDOM for the browser build).
+ * react and react-dom are bundled (React 18) — the host app does not need to
+ * install React for the editor to work. Your app may use any React version for
+ * its own UI; the editor keeps its own React 18 globals for Gutenberg.
  */
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { setRuntimeLoader } from './core/runtime.js';
+import { assignReactGlobals } from './core/assignReactGlobals.js';
 
 import '../css/editor.scss';
 
 // Register how the Gutenberg browser runtime is loaded for headless consumers:
-// assign the React globals, then load the prebuilt browser bundle shipped inside
+// assign React 18 globals, then load the prebuilt browser bundle shipped inside
 // dist-npm/ (copied at build time — not resolved from node_modules at install time).
 setRuntimeLoader(() => {
-    window.React = window.React ?? React;
-    window.ReactDOM = window.ReactDOM ?? ReactDOM;
+    assignReactGlobals(React, ReactDOM);
 
     if (window.wp?.attachEditor) {
         return Promise.resolve();

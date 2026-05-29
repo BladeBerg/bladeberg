@@ -11,6 +11,26 @@ This project follows [Semantic Versioning](https://semver.org/) and
 
 ---
 
+## [0.2.4] — 2026-05-29
+
+### Fixed
+
+- **Gutenberg runtime crash with React 19** — `isolated-block-editor@2.30` requires React 18 globals (`React.__SECRET_INTERNALS…`). The npm package now **bundles React 18** and assigns `window.React` / `window.ReactDOM` before loading the runtime. Host apps can use React 19 for their own UI without breaking the editor.
+
+### Changed
+
+- **Removed `react` / `react-dom` peer dependencies** — no longer required in consumer apps.
+
+---
+
+## [0.2.3] — 2026-05-29
+
+### Fixed
+
+- **React 19 crash in `bladeberg.js`** (`ReactCurrentOwner`) — the npm bundle no longer inlines a legacy JSX runtime; `react/jsx-runtime` is externalized so React 18 and 19 both work for BladeBerg's own components.
+
+---
+
 ## [0.2.2] — 2026-05-29
 
 ### Changed

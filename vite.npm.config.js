@@ -10,7 +10,8 @@ import { copyFileSync, existsSync, readFileSync, writeFileSync } from 'fs';
  * This build:
  *   - emits an ESM bundle (resources/js/index.js → dist-npm/bladeberg.js) that
  *     lazy-loads the Gutenberg browser runtime;
- *   - externalizes react / react-dom (provided by the host app as peers);
+ *   - bundles React 18 (required by isolated-block-editor 2.30) and assigns
+ *     window.React / window.ReactDOM before loading the Gutenberg runtime;
  *   - produces a single dist-npm/style.css = the raw Gutenberg stylesheets
  *     followed by BladeBerg's compiled overrides, so consumers import one file.
  */
@@ -94,7 +95,6 @@ export default defineConfig({
             fileName: () => 'bladeberg.js',
         },
         rollupOptions: {
-            external: ['react', 'react-dom'],
             output: {
                 assetFileNames: (assetInfo) => {
                     if (assetInfo.name && assetInfo.name.endsWith('.css')) return 'style.css';

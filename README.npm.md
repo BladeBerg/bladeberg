@@ -11,12 +11,12 @@ BladeBerg wraps [`@automattic/isolated-block-editor`](https://github.com/Automat
 ## Install
 
 ```bash
-npm install @bladeberg/editor react react-dom
+npm install @bladeberg/editor
 ```
 
-That's it. The Gutenberg runtime is **bundled inside the package** — you won't hit WordPress dependency hell.
+That's it. **No React install needed** — the package bundles React 18 (required by Gutenberg) and the full editor runtime. Your app can use React 19 for its own UI without conflict.
 
-**Requirements:** React 18 or 19, a modern browser, and a bundler that supports ESM (`import`).
+**Requirements:** A modern browser and a bundler that supports ESM (`import`).
 
 ---
 
