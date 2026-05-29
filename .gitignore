@@ -1,6 +1,7 @@
 /vendor/
 /node_modules/
 /dist-npm/
+/composer.lock
 /node_modules_old_*/
 /base/
 /public/hot
