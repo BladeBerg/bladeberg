@@ -44,6 +44,11 @@ class BladebergServiceProvider extends ServiceProvider
             $this->loadRoutesFrom(__DIR__.'/../routes/media.php');
         }
 
+        // Optional render API for headless / SPA backends (disabled by default).
+        if (config('bladeberg.render_api.enabled', false)) {
+            $this->loadRoutesFrom(__DIR__.'/../routes/render.php');
+        }
+
         if ($this->app->runningInConsole()) {
             // Unified tag — publishes the common set (assets + config):
             //   php artisan vendor:publish --tag=bladeberg

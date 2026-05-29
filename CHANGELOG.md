@@ -9,6 +9,14 @@ This project follows [Semantic Versioning](https://semver.org/) and
 
 ## [Unreleased]
 
+### Added
+
+- **Headless / decoupled mode** for API-based projects (SPA, mobile, separate frontends) without splitting the repo
+- **`@bladeberg/editor` npm package** — a framework-agnostic ESM build published alongside the Composer package from the same repo
+- **`createEditor()` JS API** (decoupled from Blade forms): mounts on any element, lazy-loads the editor runtime, and exposes `getContent()` / `onChange()` / `destroy()`; shared core under `resources/js/core/` powers both the Blade IIFE and the npm entry
+- **Optional render API**: `POST /{prefix}/render` (`render_api` config, disabled by default) plus a `Bladeberg::render($content)` facade method that turns stored block content into HTML
+- npm publish GitHub Actions workflow (publishes on `v*` tags via `NPM_TOKEN`)
+
 ### Changed
 
 - Simplified `bladeberg:install` — removed all interactive media prompts and auto-`migrate`; the media manager is now configured purely via `config/bladeberg.php` (`media.mode`) / env, re-using the app's `FILESYSTEM_DISK`

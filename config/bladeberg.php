@@ -205,4 +205,29 @@ return [
         ],
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Render API
+    |--------------------------------------------------------------------------
+    |
+    | Optional JSON endpoint for headless / SPA backends that need to turn
+    | stored block content (configured prefix) into rendered HTML on demand:
+    |
+    |   POST /{route_prefix}/render   { "content": "<!-- bb:paragraph -->..." }
+    |        → { "html": "..." }
+    |
+    | Disabled by default. Server-rendered Blade apps use <x-bladeberg-render>
+    | (or Bladeberg::render()) directly and do not need this route.
+    |
+    | enabled       Activate the route. Default: false.
+    | route_prefix  URL prefix. Route becomes POST /{prefix}/render.
+    | middleware    Applied to the route. Add 'auth'/throttle as needed.
+    |
+    */
+    'render_api' => [
+        'enabled'      => env('BLADEBERG_RENDER_API', false),
+        'route_prefix' => 'bladeberg',
+        'middleware'   => ['web'],
+    ],
+
 ];

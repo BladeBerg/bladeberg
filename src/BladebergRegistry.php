@@ -57,4 +57,21 @@ class BladebergRegistry
     {
         return $this->dynamicBlocks;
     }
+
+    /**
+     * Render stored block content (configured prefix) to HTML.
+     *
+     * Mirrors the <x-bladeberg-render> Blade component, so server-rendered and
+     * API/headless consumers produce identical markup. Useful for JSON render
+     * endpoints, queued jobs, sitemaps, RSS feeds, etc.
+     *
+     *   $html = Bladeberg::render($post->content);
+     *
+     * @param string $content Block HTML with the configured prefix (e.g. bb:)
+     * @return string Rendered HTML
+     */
+    public function render(string $content): string
+    {
+        return view('bladeberg::components.render', ['content' => $content])->render();
+    }
 }

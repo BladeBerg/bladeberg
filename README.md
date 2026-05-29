@@ -24,6 +24,7 @@
 - [The `bb:` block format & branding](#the-bb-block-format--branding)
 - [Right-click block menu](#right-click-block-menu)
 - [Storing & rendering content](#storing--rendering-content)
+- [Headless / API usage (SPA, mobile, decoupled)](#headless--api-usage-spa-mobile-decoupled)
 - [Building custom blocks](#building-custom-blocks)
 - [Media manager](#media-manager)
 - [PHP / Facade API](#php--facade-api)
@@ -109,6 +110,7 @@ The key insight: **the editor is JavaScript, but rendering is pure PHP.** Your p
 - 🎨 **Re-brandable & themable** — accent color and UI labels are CSS-variable driven; “WordPress/wp:” strings are rebranded in the UI.
 - 🖱️ **Right-click block menu** — restores the context-menu → block Options behaviour the standalone bundle drops.
 - 🗂️ **Optional media manager** — `disabled` / `link` / `select` / `upload` modes, backed by your existing Laravel filesystem disk (no extra tables) or Spatie Media Library.
+- 🧩 **Headless-ready** — a separate `@bladeberg/editor` npm package mounts the editor in any SPA/mobile frontend; an optional render API turns stored content into HTML.
 - ⚙️ **Laravel-native** — service-provider auto-discovery, publishable config, facade, and an Artisan installer.
 - 🚀 **No Node in production** — the editor is pre-built and committed; servers only run PHP.
 - ✅ **Tested** — PHPUnit suite covering the block parser and registry.
@@ -315,6 +317,85 @@ To render it, use the component:
 
 ---
 
+## Headless / API usage (SPA, mobile, decoupled)
+
+The Blade quick-start above is the simplest path, but BladeBerg also works when your frontend is a separate SPA (React, Vue, Next), a mobile webview, or anything that talks to Laravel over JSON. **You do not need a second repository** — the same project ships two artifacts:
+
+| Artifact | Registry | Install | Use |
+|----------|----------|---------|-----|
+| `bladeberg/bladeberg` | Packagist | `composer require bladeberg/bladeberg` | PHP: parse, render, dynamic blocks, media + render APIs |
+| `@bladeberg/editor` | npm | `npm i @bladeberg/editor react react-dom` | JS: mount the editor anywhere, headless |
+
+The only contract between them is **a string of block HTML with your configured prefix**. The frontend produces it; the backend parses/renders it.
+
+```mermaid
+flowchart LR
+  spa["SPA / mobile (npm @bladeberg/editor)"] -->|"createEditor() -> getContent()"| str["block-HTML string (bb: prefix)"]
+  str -->|"POST JSON"| api["Your Laravel API"]
+  api -->|"store as-is"| db[("Database")]
+  db -->|"on read"| api
+  api -->|"option A: return raw string"| spa
+  api -->|"option B: POST /bladeberg/render"| html["rendered HTML"]
+```
+
+### Mount the editor (no Blade, no form)
+
+```js
+import { createEditor } from '@bladeberg/editor';
+import '@bladeberg/editor/style.css';
+
+const editor = await createEditor({
+  target: '#editor',          // selector or element (textarea or any container)
+  value: post.content,        // stored content (your configured prefix); optional
+  blockPrefix: 'bb',          // must match the backend config
+  onChange: (html) => { draft = html; },   // optional live updates
+  media: {                    // optional; omit to disable media
+    mode: 'upload',           // 'disabled' | 'select' | 'upload'
+    apiUrl: '/bladeberg/media',
+    csrfToken: window.csrfToken,
+  },
+});
+
+// When the user saves:
+await fetch('/api/posts', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify({ content: editor.getContent() }),
+});
+
+// On teardown (SPA route change, unmount):
+editor.destroy();
+```
+
+`createEditor()` is async because it lazy-loads the Gutenberg runtime on first use. `react` and `react-dom` are peer dependencies — your app's copies are reused.
+
+### Render stored content for a headless backend
+
+Server-rendered Blade apps just use `<x-bladeberg-render>`. Headless backends have two choices:
+
+- **Return the raw string** and render it in the SPA yourself, or
+- **Enable the render API** and let Laravel return finished HTML:
+
+```php
+// config/bladeberg.php
+'render_api' => ['enabled' => true, 'middleware' => ['api']],
+```
+
+```
+POST /bladeberg/render   { "content": "<!-- bb:paragraph -->..." }
+     -> { "html": "<div class=\"bb-content\">...</div>" }
+```
+
+Or render in-process from any controller/job via the facade:
+
+```php
+$html = Bladeberg::render($post->content);
+```
+
+> **SSR note:** the package loads a browser-only Gutenberg bundle, so in Next.js/Nuxt import it from a client component (`'use client'` / dynamic `import()` with `ssr: false`).
+
+---
+
 ## Building custom blocks
 
 There are two conceptual ways to extend a Gutenberg-style editor with your own blocks. BladeBerg fully supports one of them today; the other is constrained by the standalone editor bundle. Here's the honest picture:
@@ -496,6 +577,10 @@ Bladeberg::isDynamicBlock('bladeberg/hero');       // true
 Bladeberg::hasBlock('bladeberg/hero');             // alias of isDynamicBlock()
 Bladeberg::getDynamicBlockView('bladeberg/hero');  // 'blocks.hero'
 Bladeberg::getRegisteredBlocks();                  // ['bladeberg/hero' => 'blocks.hero', …]
+
+// Render stored block content to HTML (same output as <x-bladeberg-render>).
+// Useful for JSON render endpoints, queued jobs, feeds, sitemaps, etc.
+Bladeberg::render($post->content);                 // '<div class="bb-content">…</div>'
 ```
 
 > Block-comment prefix rewriting (`wp:` ↔ your prefix) is handled on the client at save time — there is no server-side conversion helper or middleware. Stored content always uses your configured prefix.
@@ -504,24 +589,42 @@ Bladeberg::getRegisteredBlocks();                  // ['bladeberg/hero' => 'bloc
 
 ## JavaScript API
 
-BladeBerg exposes a small global surface on `window`:
+### Blade integration (global `window.Bladeberg`)
+
+When loaded via the Blade component, BladeBerg exposes a small global surface:
 
 ```js
 // Get the current block content for a field, already bb:-prefixed
 // (handy for AJAX submits instead of a native <form>).
 const content = window.Bladeberg.getContent('content');
 fetch('/posts', { method: 'POST', body: JSON.stringify({ content }) });
+
+// Programmatic mount (same as the npm createEditor — see "Headless / API usage").
+const editor = await window.Bladeberg.createEditor({ target: '#editor' });
 ```
+
+### Headless / npm (`@bladeberg/editor`)
+
+```js
+import { createEditor, registerBlock } from '@bladeberg/editor';
+import '@bladeberg/editor/style.css';
+
+const editor = await createEditor({ target: '#editor', value, onChange });
+editor.getContent();   // branded block-HTML string
+editor.destroy();      // detach + stop listeners
+```
+
+See [Headless / API usage](#headless--api-usage-spa-mobile-decoupled) for the full round-trip.
 
 ```js
 // RESERVED — not functional with the current editor bundle.
 // The shipped isolated-block-editor build does not expose window.wp.blocks,
 // so this call is queued but never flushes. It is kept as forward-compatible
 // API surface; use server-rendered blocks instead (see "Building custom blocks").
-window.Bladeberg.registerBlock('bladeberg/callout', { /* block settings */ });
+registerBlock('bladeberg/callout', { /* block settings */ });
 ```
 
-`window.React` and `window.ReactDOM` are also published (the editor bundle declares them as externals).
+In the Blade build, `window.React` and `window.ReactDOM` are also published (the editor bundle declares them as externals).
 
 ---
 

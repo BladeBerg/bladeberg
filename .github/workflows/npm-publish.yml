@@ -1,0 +1,40 @@
+name: npm publish
+
+# Publishes @bladeberg/editor to npm when a vX.Y.Z tag is pushed.
+#
+# Prerequisites (one-time, manual):
+#   1. Own the @bladeberg scope on npmjs.com.
+#   2. Create an npm "Automation" access token and add it as the NPM_TOKEN
+#      repository secret (Settings → Secrets and variables → Actions).
+#
+# The same tag also updates the Composer package on Packagist via the GitHub App.
+
+on:
+  push:
+    tags: ['v*']
+
+jobs:
+  publish:
+    name: Build and publish to npm
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build npm bundle
+        run: npm run build:npm
+
+      - name: Publish
+        run: npm publish --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

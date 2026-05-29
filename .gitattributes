@@ -17,6 +17,8 @@
 /.phpunit.result.cache export-ignore
 /phpunit.xml        export-ignore
 /vite.config.js     export-ignore
+/vite.npm.config.js export-ignore
+/dist-npm           export-ignore
 /package.json       export-ignore
 /package-lock.json  export-ignore
 /CONTRIBUTING.md    export-ignore
