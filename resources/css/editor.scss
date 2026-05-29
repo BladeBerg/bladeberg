@@ -1,0 +1,511 @@
+// ============================================================
+// BladeBerg Editor Styles
+// ============================================================
+//
+// Loaded inside the host page (not inside an iframe).
+// Scoped tightly to .bladeberg-container where possible to
+// avoid leaking into the surrounding application.
+//
+// Load order in editor.blade.php:
+//   1. core.css                   (Gutenberg chrome)
+//   2. isolated-block-editor.css  (layout shell)
+//   3. components.css             (@wordpress/components)
+//   4. blocks-style.css           (block frontend styles)
+//   5. blocks-editor.css          (block editor styles)
+//   6. THIS FILE                  (overrides + container)
+//
+// Customization
+// ─────────────
+// Publish the package config and override these !default variables
+// in your own SCSS partial before importing, or simply edit the
+// published copy directly.
+// ============================================================
+
+
+// ── Brand / accent ───────────────────────────────────────────
+// Base red:  #e11d1f  (rgb 225, 29, 31)
+// -10% L:   #c7191a  (rgb 199, 25, 26)
+// -20% L:   #ad1618  (rgb 173, 22, 24)
+$bb-color-accent:           #e11d1f !default;
+$bb-color-accent-rgb:       225, 29, 31 !default;
+$bb-color-accent-dark-10:   #c7191a !default;
+$bb-color-accent-dark-10-rgb: 199, 25, 26 !default;
+$bb-color-accent-dark-20:   #ad1618 !default;
+$bb-color-accent-dark-20-rgb: 173, 22, 24 !default;
+
+// ── Editor chrome ────────────────────────────────────────────
+$bb-border-color:           #e2e8f0 !default;
+$bb-editor-bg:              #fff !default;
+$bb-toolbar-bg:             #fff !default;
+$bb-min-height:             300px !default;
+$bb-border-radius:          0.375rem !default;
+
+// ── Z-index scale (keep above any host-page elements) ────────
+// NOTE: sticky toolbar must NOT be higher than $bb-z-popover,
+//       otherwise it traps focus and covers dropdown menus.
+$bb-z-toolbar:              10 !default;
+$bb-z-block-toolbar:        11 !default;
+$bb-z-popover:              999999 !default;
+
+// ── Inserter ─────────────────────────────────────────────────
+$bb-inserter-max-height:    70vh !default;
+
+// ── Typography ───────────────────────────────────────────────
+$bb-font-sans:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif !default;
+$bb-font-mono: Menlo, Consolas, monaco, monospace !default;
+
+
+// ============================================================
+// CSS custom properties
+// ============================================================
+// We define two parallel sets:
+//   --wp-*  Required by @wordpress/* package CSS (core.css, blocks-style.css, etc.)
+//   --bb-*  BladeBerg-native aliases — use these in your own components/blocks
+//
+// Override the $bb-* SCSS variables above to retheme the whole editor.
+// ============================================================
+// Override :root theme-color variables set by core.css.
+// Our stylesheet loads AFTER core.css so the same-specificity :root declaration
+// here wins via source order (no !important needed — core.css also uses :root).
+:root {
+    // ── wp-* (consumed by Gutenberg internals) ──────────────
+    --wp-admin-theme-color:                   #{$bb-color-accent};
+    --wp-admin-theme-color--rgb:              #{$bb-color-accent-rgb};
+    --wp-admin-theme-color-darker-10:         #{$bb-color-accent-dark-10};
+    --wp-admin-theme-color-darker-10--rgb:    #{$bb-color-accent-dark-10-rgb};
+    --wp-admin-theme-color-darker-20:         #{$bb-color-accent-dark-20};
+    --wp-admin-theme-color-darker-20--rgb:    #{$bb-color-accent-dark-20-rgb};
+    --wp-components-color-accent:             #{$bb-color-accent};
+    --wp-components-color-accent-darker-10:   #{$bb-color-accent-dark-10};
+    --wp-components-color-accent-darker-20:   #{$bb-color-accent-dark-20};
+    --wp-admin-border-width-focus:            2px;
+    --wp-block-editor-iframe__padding:        0;
+    --wp-font-sans:                           #{$bb-font-sans};
+    --wp-font-mono:                           #{$bb-font-mono};
+
+    // ── bb-* (BladeBerg-native aliases) ─────────────────────
+    // Mirror the same values so custom blocks/components can reference
+    // --bb-* without depending on Gutenberg internals.
+    --bb-color-accent:          #{$bb-color-accent};
+    --bb-color-accent-rgb:      #{$bb-color-accent-rgb};
+    --bb-color-accent-dark-10:  #{$bb-color-accent-dark-10};
+    --bb-color-accent-dark-20:  #{$bb-color-accent-dark-20};
+    --bb-border-width-focus:    var(--wp-admin-border-width-focus);
+    --bb-font-sans:             var(--wp-font-sans);
+    --bb-font-mono:             var(--wp-font-mono);
+    --bb-border-color:          #{$bb-border-color};
+    --bb-editor-bg:             #{$bb-editor-bg};
+}
+
+// ── .iso-editor override (CRITICAL) ─────────────────────────────────────────
+//
+// isolated-block-editor.css line 1 sets --wp-admin-theme-color: #0085ba
+// DIRECTLY on .iso-editor, which is the container class injected by the
+// browser bundle. A direct element-level declaration always beats inherited
+// `:root` / `body` values in CSS custom property resolution, so our :root
+// override above has no effect for anything inside the editor canvas.
+//
+// The fix: repeat the theme-color variables on .iso-editor itself.
+// Our stylesheet is enqueued AFTER isolated-block-editor.css, so at equal
+// specificity the last declaration (ours) wins via source order.
+//
+.iso-editor {
+    --wp-admin-theme-color:              #{$bb-color-accent};
+    --wp-admin-theme-color--rgb:         #{$bb-color-accent-rgb};
+    --wp-admin-theme-color-darker-10:    #{$bb-color-accent-dark-10};
+    --wp-admin-theme-color-darker-10--rgb: #{$bb-color-accent-dark-10-rgb};
+    --wp-admin-theme-color-darker-20:    #{$bb-color-accent-dark-20};
+    --wp-admin-theme-color-darker-20--rgb: #{$bb-color-accent-dark-20-rgb};
+    --wp-components-color-accent:        #{$bb-color-accent};
+    --wp-components-color-accent-darker-10: #{$bb-color-accent-dark-10};
+    --wp-components-color-accent-darker-20: #{$bb-color-accent-dark-20};
+    --wp-admin-border-width-focus:       2px;
+}
+
+
+// ============================================================
+// Editor container
+// ============================================================
+.bladeberg-container {
+    position: relative;
+    font-family: var(--wp-font-sans);
+
+    // The wrapper div injected by isolated-block-editor's attachEditor().
+    // Do NOT set overflow:hidden here — it would clip any popovers/dropdowns
+    // that haven't yet been moved to a body-level React portal.
+    .editor {
+        min-height: $bb-min-height;
+        border: 1px solid $bb-border-color;
+        border-radius: $bb-border-radius;
+        background: $bb-editor-bg;
+    }
+
+    // Writing-flow needs the same minimum so it doesn't collapse.
+    .iso-editor,
+    .iso-editor__layout,
+    .block-editor-writing-flow {
+        min-height: $bb-min-height;
+    }
+
+
+    // ── Toolbar ──────────────────────────────────────────────
+    // Sticky inside the container so it scrolls with the page only until
+    // it reaches the top, then stays visible above the canvas.
+    .edit-post-header,
+    .iso-editor__toolbar {
+        position: sticky;
+        top: 0;
+        z-index: $bb-z-toolbar;
+        background: $bb-toolbar-bg;
+        border-bottom: 1px solid $bb-border-color;
+    }
+
+    // Contextual block toolbar (floats just above the canvas)
+    .block-editor-block-contextual-toolbar {
+        z-index: $bb-z-block-toolbar;
+    }
+
+    // Left-side document-tools padding on wider viewports
+    @media (min-width: 782px) {
+        .editor-document-tools__left {
+            padding: 10px;
+        }
+    }
+}
+
+
+// ============================================================
+// Popover / Dropdown portals
+//
+// @wordpress/components renders popovers via React portals directly
+// under <body>, outside .bladeberg-container's stacking context.
+// These rules are intentionally NOT scoped to .bladeberg-container.
+// ============================================================
+.components-popover {
+    // Body-level portal: needs to float above everything on the host page
+    z-index: $bb-z-popover;
+
+    &__content {
+        // Inner content wrapper also needs an explicit z-index so that
+        // nested stacking contexts (e.g. focus rings, tooltips) don't clip it.
+        z-index: $bb-z-popover;
+        // Ensure the box model is complete so shadows/borders don't bleed
+        isolation: isolate;
+    }
+}
+
+// Block context menu (right-click / block "⋮" options)
+.block-editor-block-context-menu {
+    z-index: $bb-z-popover;
+}
+
+// Freestanding dropdown menus (block toolbar actions, inserter dropdowns)
+.components-dropdown-menu__menu {
+    z-index: $bb-z-popover;
+}
+
+// ── Menu item icon alignment ──────────────────────────────────
+// Prevents icon SVG from overlapping text or shortcut labels.
+.components-menu-item {
+    &__item {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    &__shortcut {
+        margin-left: auto;
+        opacity: 0.6;
+        font-size: 0.8em;
+    }
+}
+
+// Keep icon inside the menu item visually separate from the label
+.components-menu-item__item > .components-menu-item__icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+// ============================================================
+// Block Inserter panel
+// ============================================================
+.block-editor-inserter__main-area {
+    max-height: $bb-inserter-max-height;
+    overflow-y: auto;
+}
+
+
+// ============================================================
+// BladeBerg Media Library Modal
+// ============================================================
+
+// Full-viewport overlay
+.bb-media-modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: $bb-z-popover + 1;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+}
+
+.bb-media-modal {
+    background: #fff;
+    border-radius: $bb-border-radius;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+    width: min(900px, 100%);
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    &__header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 16px 20px;
+        border-bottom: 1px solid $bb-border-color;
+        flex-shrink: 0;
+    }
+
+    &__title {
+        font-size: 1rem;
+        font-weight: 600;
+        margin: 0;
+    }
+
+    &__close {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1rem;
+        line-height: 1;
+        padding: 4px 8px;
+        border-radius: 4px;
+        color: #666;
+
+        &:hover { background: $bb-border-color; }
+    }
+
+    &__body {
+        flex: 1;
+        overflow: auto;
+        padding: 16px 20px;
+    }
+}
+
+// ── Media Grid ───────────────────────────────────────────────
+.bb-media-grid-wrap {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.bb-media-grid-toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+}
+
+.bb-media-grid-search {
+    flex: 1;
+    min-width: 180px;
+    padding: 6px 10px;
+    border: 1px solid $bb-border-color;
+    border-radius: 4px;
+    font-size: 0.875rem;
+
+    &:focus {
+        outline: var(--wp-admin-border-width-focus) solid $bb-color-accent;
+        outline-offset: 1px;
+    }
+}
+
+.bb-media-grid-filters {
+    display: flex;
+    gap: 4px;
+}
+
+.bb-media-grid-filter {
+    padding: 4px 10px;
+    border: 1px solid $bb-border-color;
+    border-radius: 4px;
+    background: #fff;
+    cursor: pointer;
+    font-size: 0.8125rem;
+    color: #444;
+
+    &--active,
+    &:hover {
+        background: $bb-color-accent;
+        border-color: $bb-color-accent;
+        color: #fff;
+    }
+}
+
+// Upload drop zone
+.bb-media-upload-zone {
+    border: 2px dashed $bb-border-color;
+    border-radius: $bb-border-radius;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    font-size: 0.875rem;
+    color: #666;
+    transition: border-color 0.15s, background 0.15s;
+
+    &:hover,
+    &--drag {
+        border-color: $bb-color-accent;
+        background: rgba($bb-color-accent, 0.04);
+        color: $bb-color-accent;
+    }
+}
+
+// Thumbnail grid
+.bb-media-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+}
+
+.bb-media-grid__item {
+    border: 2px solid transparent;
+    border-radius: 4px;
+    background: #f8f9fa;
+    padding: 4px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    text-align: center;
+    transition: border-color 0.1s;
+
+    &:hover  { border-color: $bb-color-accent; }
+    &--selected { border-color: $bb-color-accent; background: rgba($bb-color-accent, 0.06); }
+}
+
+.bb-media-grid__thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    border-radius: 2px;
+}
+
+.bb-media-grid__icon {
+    font-size: 2rem;
+    line-height: 1;
+    padding: 12px 0;
+}
+
+.bb-media-grid__name {
+    font-size: 0.7rem;
+    color: #555;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+}
+
+.bb-media-grid-loading,
+.bb-media-grid-empty,
+.bb-media-grid-error {
+    text-align: center;
+    color: #666;
+    font-size: 0.875rem;
+    padding: 16px;
+}
+
+.bb-media-grid-error { color: #c0392b; }
+
+.bb-media-grid-load-more {
+    display: block;
+    margin: 0 auto;
+    padding: 8px 20px;
+    border: 1px solid $bb-color-accent;
+    border-radius: 4px;
+    background: #fff;
+    color: $bb-color-accent;
+    cursor: pointer;
+    font-size: 0.875rem;
+
+    &:hover {
+        background: $bb-color-accent;
+        color: #fff;
+    }
+}
+
+
+// ============================================================
+// Code Editor overlay — brands the raw-markup textarea display
+// ============================================================
+// The Code Editor mode's <textarea> is visually hidden and replaced by a
+// <pre> overlay that shows the same content with bb: instead of wp:.
+// The textarea itself remains functional (focus, keyboard, value).
+.editor-post-text-editor,
+.block-editor-plain-text {
+    // Make the real textarea invisible but still interactive
+    color: transparent !important;
+    caret-color: #{$bb-color-accent} !important;
+    position: relative;
+    z-index: 0;
+
+    &:focus { outline: var(--wp-admin-border-width-focus) solid $bb-color-accent; }
+}
+
+.bb-code-editor-overlay {
+    pointer-events: none;
+    position: absolute;
+    inset: 0;
+    margin: 0;
+    padding: inherit;
+    font: inherit;
+    line-height: inherit;
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow: auto;
+    color: #1e1e1e;
+    background: transparent;
+    z-index: 1;
+}
+
+
+// ============================================================
+// Frontend rendered content (bb-content)
+// ============================================================
+// The render.blade.php outputs <div class="bladeberg-content bb-content">.
+// blocks-style.css targets .wp-block-post-content, so we alias it here
+// so that .bb-content receives the same block spacing/layout styles.
+.bb-content {
+    // Inherit the block spacing styles that core.css applies to
+    // .wp-block-post-content and .wp-block-group.
+    > * + * { margin-top: var(--wp--style--block-gap, 1.5em); }
+
+    // Ensure .wp-block-* children still get styled (blocks-style.css selectors
+    // are .wp-block-paragraph etc. — those class names come from Gutenberg
+    // and cannot be renamed without duplicating all block CSS).
+    // Your own custom block CSS can use .bb-block-* safely.
+}
+
+
+// ============================================================
+// Branding — hide or neutralise WordPress-specific UI chrome
+// ============================================================
+// WP admin bar (never visible in an embedded editor, but just in case)
+.wp-admin-bar { display: none !important; }
+
+// "Visit site" / "wordpress.org" links that may appear in menus
+a[href*="wordpress.org"] { display: none !important; }
+
+// WordPress logo icon in help modals or about screens
+.dashicons-wordpress,
+.wp-menu-image.dashicons-before::before { display: none !important; }

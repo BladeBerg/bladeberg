@@ -1,0 +1,23 @@
+# Normalize line endings
+* text=auto eol=lf
+
+# Exclude development & build-only files from the Composer/Packagist dist.
+# The compiled editor lives in dist/ (kept), so none of the JS build
+# tooling or the upstream Gutenberg source needs to ship to consumers.
+/base               export-ignore
+/graphify-out       export-ignore
+/node_modules       export-ignore
+/tests              export-ignore
+/resources/js       export-ignore
+/resources/css      export-ignore
+/.github            export-ignore
+/.gitattributes     export-ignore
+/.gitignore         export-ignore
+/.npmrc             export-ignore
+/.phpunit.result.cache export-ignore
+/phpunit.xml        export-ignore
+/vite.config.js     export-ignore
+/package.json       export-ignore
+/package-lock.json  export-ignore
+/CONTRIBUTING.md    export-ignore
+/RELEASE.md         export-ignore

@@ -1,0 +1,23 @@
+{
+  "name": "bladeberg",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build"
+  },
+  "dependencies": {
+    "@automattic/isolated-block-editor": "^2.30.0",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.0",
+    "sass": "^1.83.4",
+    "sass-embedded": "^1.83.4",
+    "vite": "^5.0.0"
+  },
+  "overrides": {
+    "@wordpress/sync": "1.35.0"
+  }
+}
